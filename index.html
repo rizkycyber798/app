@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=0.55">
+    <title>© 2025 | Rizky Cyber - TikTok Downloader</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* Background default (sebelum video tersambung) */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://files.catbox.moe/23we91.jpg') center/cover no-repeat;
+            z-index: -3;
+            transition: opacity 1s ease;
+        }
+        
+        /* Background video */
+        #background-video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -2;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+        
+        /* Overlay untuk background video */
+        #video-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+        
+        /* Tombol kontrol audio */
+        .audio-control {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: none; /* Awalnya disembunyikan */
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: white;
+            font-size: 1.5rem;
+            z-index: 100;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .audio-control:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+        
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            margin-top: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+        
+        .container:hover {
+            transform: translateY(-5px);
+        }
+        
+        /* Decorative elements */
+        .container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
+            z-index: -1;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+        }
+        
+        header::after {
+            content: '';
+            display: block;
+            width: 100px;
+            height: 4px;
+            background: linear-gradient(to right, #ff416c, #ff4b2b);
+            margin: 15px auto 0;
+            border-radius: 2px;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(to right, #fff, #e0e0e0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            letter-spacing: 0.5px;
+        }
+        
+        .input-section {
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        .url-input {
+            width: 100%;
+            padding: 18px 20px;
+            border-radius: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            font-size: 1rem;
+            background-color: rgba(255, 255, 255, 0.15);
+            color: white;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+        
+        .url-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .url-input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.7);
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .download-btn {
+            width: 100%;
+            padding: 18px;
+            border-radius: 15px;
+            border: none;
+            background: linear-gradient(to right, #ff416c, #ff4b2b);
+            color: white;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(255, 75, 43, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .download-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+        
+        .download-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 75, 43, 0.6);
+        }
+        
+        .download-btn:hover::after {
+            left: 100%;
+        }
+        
+        .download-btn:active {
+            transform: translateY(0);
+        }
+        
+        .result-section {
+            display: none;
+            margin-top: 20px;
+            text-align: center;
+            padding: 25px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .video-info {
+            margin-bottom: 25px;
+            text-align: left;
+        }
+        
+        .video-title {
+            font-size: 1.4rem;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+        
+        .video-author {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .video-author::before {
+            content: '👤';
+            margin-right: 8px;
+        }
+        
+        .video-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .stat {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            backdrop-filter: blur(5px);
+        }
+        
+        .stat::before {
+            font-size: 0.8rem;
+        }
+        
+        #views::before { content: '👁️'; }
+        #likes::before { content: '❤️'; }
+        #comments::before { content: '💬'; }
+        #shares::before { content: '🔄'; }
+        
+        .thumbnail {
+            max-width: 100%;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            max-height: 350px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease;
+        }
+        
+        .thumbnail:hover {
+            transform: scale(1.02);
+        }
+        
+        .download-links {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .download-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 14px 28px;
+            background: linear-gradient(to right, #00b09b, #96c93d);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 176, 155, 0.4);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            border: none;
+            font-size: 1rem;
+        }
+        
+        .download-link::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+        
+        .download-link:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 176, 155, 0.6);
+        }
+        
+        .download-link:hover::after {
+            left: 100%;
+        }
+        
+        .download-link.music {
+            background: linear-gradient(to right, #8e2de2, #4a00e0);
+            box-shadow: 0 5px 15px rgba(142, 45, 226, 0.4);
+        }
+        
+        .download-link.music:hover {
+            box-shadow: 0 8px 20px rgba(142, 45, 226, 0.6);
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .spinner {
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 5px solid white;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Tombol Info Admin */
+        .info-btn {
+            width: 100%;
+            padding: 15px;
+            border-radius: 15px;
+            border: none;
+            background: linear-gradient(to right, #8e2de2, #4a00e0);
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(142, 45, 226, 0.4);
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .info-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(142, 45, 226, 0.6);
+        }
+        
+        /* Modal Info Admin */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-content {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            animation: modalFadeIn 0.3s ease;
+        }
+        
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        .modal-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 15px;
+        }
+        
+        .profile-pic {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .admin-info h3 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+        
+        .admin-info p {
+            opacity: 0.8;
+        }
+        
+        .contact-links {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .contact-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            text-decoration: none;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .contact-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(5px);
+        }
+        
+        .contact-link i {
+            font-size: 1.2rem;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        .error-message {
+            display: none;
+            background-color: rgba(255, 0, 0, 0.2);
+            padding: 18px;
+            border-radius: 15px;
+            margin-top: 20px;
+            text-align: center;
+            border-left: 4px solid #ff4b2b;
+            backdrop-filter: blur(5px);
+            animation: shake 0.5s ease;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        
+        .api-response {
+            display: none;
+            margin-top: 30px;
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .api-response h3 {
+            margin-bottom: 15px;
+            text-align: center;
+            color: #ffcc00;
+        }
+        
+        .api-response pre {
+            white-space: pre-wrap;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            color: #e0e0e0;
+        }
+        
+        .toggle-api-response {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        
+        .toggle-api-response:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 0.9rem;
+            opacity: 0.7;
+            width: 100%;
+            padding: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 25px;
+                border-radius: 20px;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .download-links {
+                flex-direction: column;
+            }
+            
+            .video-stats {
+                justify-content: center;
+            }
+            
+            .modal-header {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background video element -->
+    <video id="background-video" loop muted>
+        <!-- Video akan di-set via JavaScript -->
+    </video>
+    <div id="video-overlay"></div>
+    
+    <!-- Tombol kontrol audio -->
+    <button class="audio-control" id="audio-toggle">🔇</button>
+    
+    <div class="container">
+        <header>
+            <h1>Downloader TikTok</h1>
+            <p class="subtitle">Unduh video TikTok tanpa watermark dengan mudah</p>
+        </header>
+        
+        <div class="input-section">
+            <div class="input-group">
+                <input type="text" class="url-input" placeholder="Tempel URL video TikTok di sini...">
+            </div>
+            <button class="download-btn">Download Video</button>
+        </div>
+        
+        <div class="loading">
+            <div class="spinner"></div>
+            <p>Memproses video...</p>
+        </div>
+        
+        <div class="error-message">
+            <p>Terjadi kesalahan. Pastikan URL TikTok valid dan coba lagi.</p>
+        </div>
+        
+        <div class="result-section">
+            <img src="" alt="Thumbnail video" class="thumbnail">
+            <div class="video-info">
+                <h3 class="video-title">Judul Video</h3>
+                <p class="video-author">Oleh: @username</p>
+                <div class="video-stats">
+                    <div class="stat" id="views">0 views</div>
+                    <div class="stat" id="likes">0 likes</div>
+                    <div class="stat" id="comments">0 comments</div>
+                    <div class="stat" id="shares">0 shares</div>
+                </div>
+                <p class="video-author" id="duration">Durasi: 0 detik</p>
+            </div>
+            <div class="download-links">
+                <button class="download-link" id="download-video-btn">Download Video</button>
+                <button class="download-link music" id="download-music-btn">Download Musik</button>
+            </div>
+            
+            <button class="toggle-api-response">Lihat Detail API Response</button>
+            
+            <div class="api-response">
+                <h3>Detail API Response</h3>
+                <pre id="api-response-content">API response akan ditampilkan di sini...</pre>
+            </div>
+        </div>
+        
+        <!-- Tombol Info Admin -->
+        <button class="info-btn" id="info-btn">
+            <span>📞</span> Info & Kontak Admin
+        </button>
+        
+        <!-- Modal Info Admin -->
+        <div class="modal" id="admin-modal">
+            <div class="modal-content">
+                <button class="close-modal" id="close-modal">×</button>
+                <div class="modal-header">
+                    <img src="https://files.catbox.moe/ts1x0y.jpg" alt="Rizky Cyber" class="profile-pic">
+                    <div class="admin-info">
+                        <h3>Rizky Cyber</h3>
+                        <p>Admin & Developer</p>
+                    </div>
+                </div>
+                <div class="contact-links">
+                    <a href="https://wa.me/6285126274305" class="contact-link" target="_blank">
+                        <span>💬</span> Chat Admin
+                    </a>
+                    <a href="https://chat.whatsapp.com/Jmbs0K52j3fB4FOP5wViWX" class="contact-link" target="_blank">
+                        <span>👥</span> Join Grup WhatsApp
+                    </a>
+                    <a href="https://whatsapp.com/channel/0029Vb6zk9h7DAWw5iFGoI1N" class="contact-link" target="_blank">
+                        <span>📢</span> Join Saluran WhatsApp
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>© 2025 | Rizky Cyber - TikTok Downloader</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlInput = document.querySelector('.url-input');
+            const downloadBtn = document.querySelector('.download-btn');
+            const loading = document.querySelector('.loading');
+            const resultSection = document.querySelector('.result-section');
+            const errorMessage = document.querySelector('.error-message');
+            const thumbnail = document.querySelector('.thumbnail');
+            const videoTitle = document.querySelector('.video-title');
+            const videoAuthor = document.querySelector('.video-author');
+            const views = document.querySelector('#views');
+            const likes = document.querySelector('#likes');
+            const comments = document.querySelector('#comments');
+            const shares = document.querySelector('#shares');
+            const duration = document.querySelector('#duration');
+            const downloadVideoBtn = document.querySelector('#download-video-btn');
+            const downloadMusicBtn = document.querySelector('#download-music-btn');
+            const apiResponse = document.querySelector('.api-response');
+            const apiResponseContent = document.querySelector('#api-response-content');
+            const toggleApiResponse = document.querySelector('.toggle-api-response');
+            const backgroundVideo = document.querySelector('#background-video');
+            const videoOverlay = document.querySelector('#video-overlay');
+            const audioToggle = document.querySelector('#audio-toggle');
+            const infoBtn = document.querySelector('#info-btn');
+            const adminModal = document.querySelector('#admin-modal');
+            const closeModal = document.querySelector('#close-modal');
+            
+            // Variabel untuk menyimpan data video
+            let videoData = null;
+            let isAudioMuted = true;
+            
+            // API URL
+            const API_URL = 'https://tikwm.com/api/';
+            
+            // Event listener untuk tombol info admin
+            infoBtn.addEventListener('click', function() {
+                adminModal.style.display = 'flex';
+            });
+            
+            // Event listener untuk menutup modal
+            closeModal.addEventListener('click', function() {
+                adminModal.style.display = 'none';
+            });
+            
+            // Tutup modal ketika klik di luar konten modal
+            adminModal.addEventListener('click', function(e) {
+                if (e.target === adminModal) {
+                    adminModal.style.display = 'none';
+                }
+            });
+            
+            downloadBtn.addEventListener('click', async function() {
+                const url = urlInput.value.trim();
+                
+                if (!url) {
+                    showError('Silakan masukkan URL video TikTok');
+                    return;
+                }
+                
+                // Validasi URL TikTok
+                if (!isValidTikTokUrl(url)) {
+                    showError('URL tidak valid. Pastikan URL berasal dari TikTok');
+                    return;
+                }
+                
+                // Tampilkan loading
+                loading.style.display = 'block';
+                resultSection.style.display = 'none';
+                errorMessage.style.display = 'none';
+                apiResponse.style.display = 'none';
+                
+                try {
+                    // Panggil API
+                    const data = await fetchTikTokData(url);
+                    
+                    if (data && data.code === 0) {
+                        // Sembunyikan loading
+                        loading.style.display = 'none';
+                        
+                        // Simpan data video
+                        videoData = data;
+                        
+                        // Tampilkan hasil
+                        resultSection.style.display = 'block';
+                        
+                        // Set data video
+                        displayVideoData(data);
+                        
+                        // Set background video
+                        setBackgroundVideo(data.data.play);
+                        
+                        // Tampilkan response API
+                        displayApiResponse(data);
+                    } else {
+                        throw new Error(data.msg || 'Tidak dapat mengambil data video');
+                    }
+                    
+                } catch (error) {
+                    console.error('Error:', error);
+                    showError('Gagal mengambil video. Silakan coba lagi dengan URL yang berbeda.');
+                }
+            });
+            
+            // Event listener untuk tombol download video
+            downloadVideoBtn.addEventListener('click', async function() {
+                if (videoData && videoData.data && videoData.data.play) {
+                    await downloadFile(videoData.data.play, 'tiktok_video.mp4');
+                } else {
+                    showError('URL video tidak tersedia');
+                }
+            });
+            
+            // Event listener untuk tombol download musik
+            downloadMusicBtn.addEventListener('click', async function() {
+                if (videoData && videoData.data && videoData.data.music) {
+                    await downloadFile(videoData.data.music, 'tiktok_music.mp3');
+                } else {
+                    showError('URL musik tidak tersedia');
+                }
+            });
+            
+            // Event listener untuk tombol audio toggle
+            audioToggle.addEventListener('click', function() {
+                isAudioMuted = !isAudioMuted;
+                backgroundVideo.muted = isAudioMuted;
+                audioToggle.textContent = isAudioMuted ? '🔇' : '🔊';
+            });
+            
+            // Fungsi untuk mendownload file
+            async function downloadFile(url, filename) {
+                try {
+                    // Tampilkan loading
+                    downloadVideoBtn.textContent = 'Mengunduh...';
+                    downloadVideoBtn.disabled = true;
+                    
+                    // Fetch file dari URL
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error('Gagal mengambil file');
+                    
+                    // Konversi ke blob
+                    const blob = await response.blob();
+                    
+                    // Buat URL objek dari blob
+                    const blobUrl = URL.createObjectURL(blob);
+                    
+                    // Buat elemen <a> sementara untuk download
+                    const a = document.createElement('a');
+                    a.href = blobUrl;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    
+                    // Bersihkan URL objek
+                    URL.revokeObjectURL(blobUrl);
+                    
+                    // Reset tombol
+                    downloadVideoBtn.textContent = 'Download Video';
+                    downloadVideoBtn.disabled = false;
+                    
+                } catch (error) {
+                    console.error('Error downloading file:', error);
+                    showError('Gagal mengunduh file. Silakan coba lagi.');
+                    
+                    // Reset tombol
+                    downloadVideoBtn.textContent = 'Download Video';
+                    downloadVideoBtn.disabled = false;
+                }
+            }
+            
+            // Fungsi untuk mengatur background video
+            function setBackgroundVideo(videoUrl) {
+                if (videoUrl) {
+                    backgroundVideo.src = videoUrl;
+                    
+                    // Tampilkan tombol audio
+                    audioToggle.style.display = 'flex';
+                    
+                    // Tunggu video siap diputar
+                    backgroundVideo.addEventListener('loadeddata', function() {
+                        // Setelah video siap, tampilkan video dan sembunyikan gambar default
+                        backgroundVideo.style.opacity = '1';
+                        videoOverlay.style.opacity = '1';
+                        
+                        // Coba putar video
+                        backgroundVideo.play().catch(e => {
+                            console.log('Autoplay prevented, waiting for user interaction');
+                        });
+                    });
+                    
+                    // Tambahkan event listener untuk memastikan video diputar
+                    document.addEventListener('click', function startVideo() {
+                        backgroundVideo.play().catch(e => console.log('Video play error:', e));
+                        document.removeEventListener('click', startVideo);
+                    });
+                }
+            }
+            
+            function isValidTikTokUrl(url) {
+                const tiktokPatterns = [
+                    /tiktok\.com\/.*\/video\/\d+/,
+                    /vt\.tiktok\.com\/.+/,
+                    /vm\.tiktok\.com\/.+/,
+                    /tiktok\.com\/t\/[a-zA-Z0-9]+/
+                ];
+                
+                return tiktokPatterns.some(pattern => pattern.test(url));
+            }
+            
+            async function fetchTikTokData(url) {
+                const apiUrl = `${API_URL}?url=${encodeURIComponent(url)}`;
+                console.log('Mengambil data dari:', apiUrl);
+                
+                const response = await fetch(apiUrl);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('Data API:', data);
+                return data;
+            }
+            
+            function displayVideoData(data) {
+                // Ambil data dari response API
+                const videoData = data.data;
+                
+                // Tampilkan data di UI
+                if (videoData.cover) {
+                    thumbnail.src = videoData.cover;
+                    thumbnail.alt = videoData.title;
+                } else {
+                    thumbnail.src = 'https://via.placeholder.com/300x400/6a11cb/ffffff?text=Thumbnail+TikTok';
+                }
+                
+                videoTitle.textContent = videoData.title || 'Video TikTok';
+                videoAuthor.textContent = `Oleh: @${videoData.author?.unique_id || 'tiktokuser'}`;
+                
+                // Set statistik
+                views.textContent = `${formatNumber(videoData.play_count)} views`;
+                likes.textContent = `${formatNumber(videoData.digg_count)} likes`;
+                comments.textContent = `${formatNumber(videoData.comment_count)} comments`;
+                shares.textContent = `${formatNumber(videoData.share_count)} shares`;
+                duration.textContent = `Durasi: ${videoData.duration} detik`;
+                
+                // Tampilkan tombol download
+                if (videoData.play) {
+                    downloadVideoBtn.style.display = 'inline-flex';
+                } else {
+                    downloadVideoBtn.style.display = 'none';
+                }
+                
+                if (videoData.music) {
+                    downloadMusicBtn.style.display = 'inline-flex';
+                } else {
+                    downloadMusicBtn.style.display = 'none';
+                }
+            }
+            
+            function displayApiResponse(data) {
+                // Format data untuk ditampilkan
+                const formattedData = JSON.stringify(data, null, 2);
+                apiResponseContent.textContent = formattedData;
+                
+                // Toggle untuk menampilkan/sembunyikan response API
+                toggleApiResponse.addEventListener('click', function() {
+                    if (apiResponse.style.display === 'none') {
+                        apiResponse.style.display = 'block';
+                        toggleApiResponse.textContent = 'Sembunyikan Detail API Response';
+                    } else {
+                        apiResponse.style.display = 'none';
+                        toggleApiResponse.textContent = 'Lihat Detail API Response';
+                    }
+                });
+            }
+            
+            function formatNumber(num) {
+                if (num >= 1000000) {
+                    return (num / 1000000).toFixed(1) + 'M';
+                } else if (num >= 1000) {
+                    return (num / 1000).toFixed(1) + 'K';
+                }
+                return num.toString();
+            }
+            
+            function showError(message) {
+                loading.style.display = 'none';
+                errorMessage.style.display = 'block';
+                errorMessage.querySelector('p').textContent = message;
+            }
+            
+            // Auto-fill dengan URL dari clipboard jika ada
+            if (navigator.clipboard && navigator.clipboard.readText) {
+                navigator.clipboard.readText().then(text => {
+                    if (text.includes('tiktok.com')) {
+                        urlInput.value = text;
+                        urlInput.focus();
+                    }
+                }).catch(err => {
+                    // Jika clipboard tidak bisa diakses, tidak apa-apa
+                });
+            }
+            
+            // Contoh URL TikTok untuk testing
+            urlInput.placeholder = 'Contoh: https://vt.tiktok.com/ZSU7xy99R/';
+            
+            // Tambahkan event listener untuk tombol Enter
+            urlInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    downloadBtn.click();
+                }
+            });
+            
+            // Tambahkan contoh URL untuk testing
+            const testUrls = [
+                'https://vt.tiktok.com/ZSU7xy99R/',
+                'https://vt.tiktok.com/ZSU7xKV1h/',
+                'https://vt.tiktok.com/ZSU7xTNWh/'
+            ];
+            
+            // Tambahkan tombol test (hanya untuk development)
+            const testButton = document.createElement('button');
+            testButton.textContent = 'Test dengan URL Contoh';
+            testButton.style.cssText = `
+                background: transparent;
+                border: 1px solid rgba(255,255,255,0.3);
+                color: white;
+                padding: 8px 15px;
+                border-radius: 10px;
+                margin-top: 10px;
+                cursor: pointer;
+                font-size: 0.9rem;
+            `;
+            testButton.addEventListener('click', function() {
+                const randomUrl = testUrls[Math.floor(Math.random() * testUrls.length)];
+                urlInput.value = randomUrl;
+                urlInput.focus();
+            });
+            
+            document.querySelector('.input-section').appendChild(testButton);
+        });
+    </script>
+</body>
+</html>
